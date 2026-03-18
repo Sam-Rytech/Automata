@@ -1,0 +1,15 @@
+{
+  "name": "automata-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "contracts",
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "contracts:compile": "npm run compile -w contracts",
+    "backend:dev": "npm run dev -w backend",
+    "frontend:dev": "npm run dev -w frontend"
+  }
+}
