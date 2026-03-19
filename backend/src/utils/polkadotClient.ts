@@ -55,6 +55,3 @@ export const getApi = async (): Promise<ApiPromise> => {
     throw error
   }
 }
-
-// Quick manual test: uncomment the line below and run `npx ts-node src/utils/polkadotClient.ts`
-getApi().then(() => process.exit(0));
