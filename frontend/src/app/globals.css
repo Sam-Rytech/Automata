@@ -14,6 +14,7 @@
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+  font-family: var(--font-syne-var, 'Syne', sans-serif) !important;
 }
 
 html {
@@ -23,9 +24,22 @@ html {
 body {
   background-color: #0f0f1a;
   color: #ffffff;
-  font-family: var(--font-syne-var, sans-serif);
+  font-family: var(--font-syne-var, 'Syne', sans-serif) !important;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Force Syne into ReactFlow and any third-party component */
+.react-flow,
+.react-flow * {
+  font-family: var(--font-syne-var, 'Syne', sans-serif) !important;
+}
+
+input,
+select,
+textarea,
+button {
+  font-family: var(--font-syne-var, 'Syne', sans-serif) !important;
 }
 
 body::before {
