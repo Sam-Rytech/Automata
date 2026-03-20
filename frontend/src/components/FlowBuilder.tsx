@@ -9,27 +9,27 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   type Connection,
-  type Edge,
   type Node,
   type ReactFlowInstance,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { motion } from "framer-motion";
-import { ActionNode, type ActionType, type ActionNodeData } from "./ActionNode";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ActionNode,
+  ACTION_CONFIG,
+  HoveredNodeContext,
+  type ActionType,
+  type ActionNodeData,
+} from "./ActionNode";
 import type { Action } from "@/lib/types";
 
 const nodeTypes = { action: ActionNode };
 
-const ACTION_CHIPS: {
-  type: ActionType;
-  color: string;
-  arcX: number;
-  arcY: number;
-}[] = [
-  { type: "SWAP", color: "#e91e8c", arcX: -140, arcY: -60 },
-  { type: "BRIDGE", color: "#9d5ff5", arcX: -48, arcY: -88 },
-  { type: "STAKE", color: "#1db954", arcX: 48, arcY: -88 },
-  { type: "TRANSFER", color: "#4C9FFF", arcX: 140, arcY: -60 },
+const CHIPS: { type: ActionType }[] = [
+  { type: "SWAP" },
+  { type: "BRIDGE" },
+  { type: "STAKE" },
+  { type: "TRANSFER" },
 ];
 
 let nodeIdCounter = 0;
@@ -43,17 +43,20 @@ export function FlowBuilder({ onChange }: FlowBuilderProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [draggingChip, setDraggingChip] = useState<string | null>(null);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   const emitActions = useCallback(
-    (currentNodes: Node[]) => {
-      const actions: Action[] = currentNodes.map((n) => ({
-        id: n.id,
-        type: n.data.type as ActionType,
-        destinationParaId: n.data.destinationParaId,
-        gasLimit: n.data.gasLimit,
-      }));
-      onChange(actions);
+    (ns: Node[]) => {
+      onChange(
+        ns.map((n) => ({
+          id: n.id,
+          type: n.data.type,
+          destinationParaId: n.data.destinationParaId,
+          gasLimit: n.data.gasLimit,
+        })),
+      );
     },
     [onChange],
   );
@@ -61,9 +64,9 @@ export function FlowBuilder({ onChange }: FlowBuilderProps) {
   const deleteNode = useCallback(
     (id: string) => {
       setNodes((nds) => {
-        const updated = nds.filter((n) => n.id !== id);
-        emitActions(updated);
-        return updated;
+        const u = nds.filter((n) => n.id !== id);
+        emitActions(u);
+        return u;
       });
       setEdges((eds) => eds.filter((e) => e.source !== id && e.target !== id));
     },
@@ -73,32 +76,31 @@ export function FlowBuilder({ onChange }: FlowBuilderProps) {
   const updateNode = useCallback(
     (id: string, data: Partial<ActionNodeData>) => {
       setNodes((nds) => {
-        const updated = nds.map((n) =>
+        const u = nds.map((n) =>
           n.id === id ? { ...n, data: { ...n.data, ...data } } : n,
         );
-        emitActions(updated);
-        return updated;
+        emitActions(u);
+        return u;
       });
     },
     [setNodes, emitActions],
   );
 
-  const addNode = useCallback(
-    (type: ActionType) => {
-      if (!rfInstance) return;
+  const spawnNode = useCallback(
+    (type: ActionType, position?: { x: number; y: number }) => {
+      if (!rfInstance || !reactFlowWrapper.current) return;
+      const bounds = reactFlowWrapper.current.getBoundingClientRect();
+      const pos =
+        position ??
+        rfInstance.project({
+          x: bounds.width / 2 - 110,
+          y: 100 + nodes.length * 110,
+        });
       const id = getNodeId();
-      const center = rfInstance.project({
-        x: (reactFlowWrapper.current?.clientWidth ?? 600) / 2 - 110,
-        y:
-          (reactFlowWrapper.current?.clientHeight ?? 500) / 2 -
-          60 +
-          nodes.length * 90,
-      });
-
       const newNode: Node<ActionNodeData> = {
         id,
         type: "action",
-        position: center,
+        position: pos,
         data: {
           type,
           destinationParaId: 1000,
@@ -107,10 +109,8 @@ export function FlowBuilder({ onChange }: FlowBuilderProps) {
           onUpdate: updateNode,
         },
       };
-
       setNodes((nds) => {
-        const updated = [...nds, newNode];
-        // Auto-connect to previous node
+        const u = [...nds, newNode];
         if (nds.length > 0) {
           const prev = nds[nds.length - 1];
           setEdges((eds) => [
@@ -120,12 +120,12 @@ export function FlowBuilder({ onChange }: FlowBuilderProps) {
               source: prev.id,
               target: id,
               animated: true,
-              style: { stroke: "#e91e8c", strokeWidth: 1.5, opacity: 0.6 },
+              style: { stroke: "#e91e8c", strokeWidth: 1.5, opacity: 0.5 },
             },
           ]);
         }
-        emitActions(updated);
-        return updated;
+        emitActions(u);
+        return u;
       });
     },
     [
@@ -146,7 +146,7 @@ export function FlowBuilder({ onChange }: FlowBuilderProps) {
           {
             ...params,
             animated: true,
-            style: { stroke: "#e91e8c", strokeWidth: 1.5, opacity: 0.6 },
+            style: { stroke: "#e91e8c", strokeWidth: 1.5, opacity: 0.5 },
           },
           eds,
         ),
@@ -163,28 +163,12 @@ export function FlowBuilder({ onChange }: FlowBuilderProps) {
       const bounds = reactFlowWrapper.current.getBoundingClientRect();
       const position = rfInstance.project({
         x: e.clientX - bounds.left - 110,
-        y: e.clientY - bounds.top - 40,
+        y: e.clientY - bounds.top - 60,
       });
-      const id = getNodeId();
-      const newNode: Node<ActionNodeData> = {
-        id,
-        type: "action",
-        position,
-        data: {
-          type,
-          destinationParaId: 1000,
-          gasLimit: 5000000,
-          onDelete: deleteNode,
-          onUpdate: updateNode,
-        },
-      };
-      setNodes((nds) => {
-        const u = [...nds, newNode];
-        emitActions(u);
-        return u;
-      });
+      spawnNode(type, position);
+      setDraggingChip(null);
     },
-    [rfInstance, deleteNode, updateNode, setNodes, emitActions],
+    [rfInstance, spawnNode],
   );
 
   const onDragOver = (e: React.DragEvent) => {
@@ -193,154 +177,232 @@ export function FlowBuilder({ onChange }: FlowBuilderProps) {
   };
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%" }}>
-      {/* Floating action chips in arc */}
+    <HoveredNodeContext.Provider value={{ hoveredId, setHoveredId }}>
       <div
         style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          zIndex: 10,
-          pointerEvents: nodes.length > 0 ? "none" : "auto",
-          opacity: nodes.length > 0 ? 0 : 1,
-          transition: "opacity 0.3s ease",
+          position: "relative",
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        {ACTION_CHIPS.map((chip, i) => (
-          <motion.div
-            key={chip.type}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: i * 0.08,
-              duration: 0.5,
-              ease: [0.16, 1, 0.3, 1],
-            }}
-            whileHover={{ scale: 1.12 }}
-            whileTap={{ scale: 0.95 }}
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              transform: `translate(calc(-50% + ${chip.arcX}px), calc(-50% + ${chip.arcY}px))`,
-            }}
-          >
-            <button
-              draggable
-              onDragStart={(e: React.DragEvent<HTMLButtonElement>) =>
-                e.dataTransfer.setData("actionType", chip.type)
-              }
-              onClick={() => addNode(chip.type)}
-              style={{
-                background: "rgba(15,15,26,0.92)",
-                border: `1px solid ${chip.color}55`,
-                borderRadius: "999px",
-                padding: "0.3rem 0.85rem",
-                color: chip.color,
-                fontSize: "0.65rem",
-                fontWeight: 700,
-                letterSpacing: "0.12em",
-                cursor: "grab",
-                fontFamily: "inherit",
-                backdropFilter: "blur(8px)",
-                boxShadow: `0 0 12px ${chip.color}18, 0 2px 8px rgba(0,0,0,0.4)`,
-              }}
-            >
-              {chip.type}
-            </button>
-          </motion.div>
-        ))}
-
-        {/* Center hint text */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
+        {/* ── Chip tray ── */}
+        <div
           style={{
-            position: "absolute",
-            left: "50%",
-            top: "50%",
-            transform: "translate(-50%, 20px)",
-            color: "rgba(255,255,255,0.2)",
-            fontSize: "0.72rem",
-            letterSpacing: "0.1em",
-            whiteSpace: "nowrap",
-            pointerEvents: "none",
+            flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "14px",
+            padding: "14px 20px",
+            borderBottom: "1px solid rgba(255,255,255,0.05)",
+            background: "rgba(12,12,22,0.8)",
+            backdropFilter: "blur(10px)",
+            zIndex: 10,
           }}
         >
-          drag or click to add
-        </motion.p>
-      </div>
+          {CHIPS.map((chip, i) => {
+            const cfg = ACTION_CONFIG[chip.type];
+            const isDragging = draggingChip === chip.type;
+            return (
+              <motion.div
+                key={chip.type}
+                initial={{ opacity: 0, y: -16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  delay: i * 0.07,
+                  duration: 0.45,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                draggable
+                onDragStart={(e: any) => {
+                  e.dataTransfer.setData("actionType", chip.type);
+                  setDraggingChip(chip.type);
+                }}
+                onDragEnd={() => setDraggingChip(null)}
+                onClick={() => spawnNode(chip.type)}
+                whileHover={{ y: -4, scale: 1.05 }}
+                whileTap={{ scale: 0.94, y: 2 }}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  width: "100px",
+                  height: "80px",
+                  borderRadius: "14px",
+                  cursor: "grab",
+                  userSelect: "none",
+                  opacity: isDragging ? 0.4 : 1,
+                  /* Physical key surface */
+                  background:
+                    "linear-gradient(160deg, #1e1e34 0%, #171728 55%, #111120 100%)",
+                  boxShadow: `
+                    0 1px 0 0 ${cfg.color}88 inset,
+                    1px 0 0 0 rgba(255,255,255,0.04) inset,
+                    -1px 0 0 0 rgba(0,0,0,0.3) inset,
+                    0 -4px 0 0 rgba(0,0,0,0.5) inset,
+                    0 0 0 1px rgba(255,255,255,0.06),
+                    0 5px 0 0 #080812,
+                    0 8px 20px rgba(0,0,0,0.55),
+                    0 0 28px ${cfg.color}0e
+                  `,
+                  transition: "opacity 0.2s, box-shadow 0.2s",
+                }}
+              >
+                {/* Icon */}
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "10px",
+                    background: cfg.bg,
+                    border: `1px solid ${cfg.color}33`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "18px",
+                    color: cfg.color,
+                  }}
+                >
+                  {cfg.icon}
+                </div>
+                {/* Label */}
+                <span
+                  style={{
+                    fontSize: "0.65rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    color: "rgba(255,255,255,0.65)",
+                  }}
+                >
+                  {chip.type}
+                </span>
+              </motion.div>
+            );
+          })}
 
-      {/* React Flow canvas */}
-      <div ref={reactFlowWrapper} style={{ width: "100%", height: "100%" }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onInit={setRfInstance}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
-          nodeTypes={nodeTypes}
-          fitView
-          proOptions={{ hideAttribution: true }}
-          style={{ background: "transparent" }}
-        >
-          <Background
-            variant={BackgroundVariant.Dots}
-            gap={22}
-            size={1}
-            color="rgba(255,255,255,0.07)"
-          />
-          <Controls
+          <span
             style={{
-              background: "rgba(22,33,62,0.9)",
-              border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: "10px",
+              color: "rgba(255,255,255,0.12)",
+              fontSize: "0.65rem",
+              letterSpacing: "0.06em",
+              marginLeft: "4px",
             }}
-          />
-          <MiniMap
-            style={{
-              background: "rgba(22,33,62,0.9)",
-              border: "1px solid rgba(255,255,255,0.07)",
-              borderRadius: "10px",
-            }}
-            nodeColor={(n) => {
-              const colors: Record<ActionType, string> = {
-                SWAP: "#e91e8c",
-                BRIDGE: "#9d5ff5",
-                STAKE: "#1db954",
-                TRANSFER: "#4C9FFF",
-              };
-              return colors[n.data?.type as ActionType] ?? "#888";
-            }}
-            maskColor="rgba(15,15,26,0.8)"
-          />
-        </ReactFlow>
-      </div>
+          >
+            drag or click
+          </span>
+        </div>
 
-      <style>{`
-        @keyframes float-chip {
-          0%, 100% { transform: translate(calc(-50% + var(--ax, 0px)), calc(-50% + var(--ay, 0px))); }
-          50% { transform: translate(calc(-50% + var(--ax, 0px)), calc(-50% + var(--ay, 0px) - 5px)); }
-        }
-        .react-flow__controls button {
-          background: transparent !important;
-          border: none !important;
-          border-bottom: 1px solid rgba(255,255,255,0.07) !important;
-          color: #888 !important;
-          fill: #888 !important;
-        }
-        .react-flow__controls button:hover {
-          color: #fff !important;
-          fill: #fff !important;
-          background: rgba(233,30,140,0.1) !important;
-        }
-        .react-flow__controls button:last-child { border-bottom: none !important; }
-      `}</style>
-    </div>
+        {/* ── Canvas ── */}
+        <div ref={reactFlowWrapper} style={{ flex: 1, position: "relative" }}>
+          {/* Empty state */}
+          <AnimatePresence>
+            {nodes.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  zIndex: 5,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  pointerEvents: "none",
+                }}
+              >
+                <p
+                  style={{
+                    color: "rgba(255,255,255,0.08)",
+                    fontSize: "0.85rem",
+                    letterSpacing: "0.1em",
+                  }}
+                >
+                  Drop an action to start your flow
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Radial canvas glow */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 0,
+              pointerEvents: "none",
+              background:
+                "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(106,13,173,0.04) 0%, transparent 70%)",
+            }}
+          />
+
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onInit={setRfInstance}
+            onDrop={onDrop}
+            onDragOver={onDragOver}
+            nodeTypes={nodeTypes}
+            fitView
+            proOptions={{ hideAttribution: true }}
+            style={{ background: "transparent" }}
+          >
+            <Background
+              variant={BackgroundVariant.Dots}
+              gap={24}
+              size={1}
+              color="rgba(255,255,255,0.05)"
+            />
+            <Controls
+              style={{
+                background: "rgba(18,18,32,0.95)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: "10px",
+              }}
+            />
+            <MiniMap
+              style={{
+                background: "rgba(18,18,32,0.95)",
+                border: "1px solid rgba(255,255,255,0.07)",
+                borderRadius: "10px",
+              }}
+              nodeColor={(n) => {
+                const c: Record<string, string> = {
+                  SWAP: "#e91e8c",
+                  BRIDGE: "#9d5ff5",
+                  STAKE: "#1db954",
+                  TRANSFER: "#4C9FFF",
+                };
+                return c[n.data?.type] ?? "#555";
+              }}
+              maskColor="rgba(12,12,22,0.78)"
+            />
+          </ReactFlow>
+        </div>
+
+        <style>{`
+          .react-flow__controls button {
+            background: transparent !important;
+            border: none !important;
+            border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+            color: #555 !important;
+            fill: #555 !important;
+          }
+          .react-flow__controls button:hover {
+            color: #fff !important; fill: #fff !important;
+            background: rgba(233,30,140,0.07) !important;
+          }
+          .react-flow__controls button:last-child { border-bottom: none !important; }
+          .react-flow__node { transition: transform 0.2s ease; }
+        `}</style>
+      </div>
+    </HoveredNodeContext.Provider>
   );
 }
