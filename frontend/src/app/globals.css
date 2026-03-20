@@ -32,7 +32,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Grain overlay for depth */
 body::before {
   content: '';
   position: fixed;
@@ -43,7 +42,6 @@ body::before {
   z-index: 9999;
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
 }
@@ -57,13 +55,12 @@ body::before {
   border-radius: 2px;
 }
 
-/* Selection */
 ::selection {
   background: rgba(233, 30, 140, 0.3);
   color: #fff;
 }
 
-/* Nav link hover underline */
+/* ─── Nav link ─── */
 .nav-link {
   position: relative;
   color: var(--text-muted);
@@ -71,6 +68,7 @@ body::before {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   transition: color 0.3s ease;
+  text-decoration: none;
 }
 
 .nav-link::after {
@@ -92,79 +90,133 @@ body::before {
   width: 100%;
 }
 
-/* Glow button */
-.btn-launch {
+/* ─────────────────────────────────────────
+   SKEUOMORPHIC KEY BUTTON SYSTEM
+   Think: physical keyboard key, matte dark,
+   pink rim light on top edge, depth shadow
+───────────────────────────────────────── */
+.skeuo-btn {
   position: relative;
-  background: var(--accent-pink);
-  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
   font-family: var(--font-syne);
   font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: 0.08em;
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 1.1rem 3rem;
-  border: none;
+  color: #fff;
   cursor: pointer;
-  overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  border: none;
+  outline: none;
+  user-select: none;
+  text-decoration: none;
+  padding: 1.1rem 3rem;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #2a1a2e 0%, #1a0f22 45%, #130c1a 100%);
+  box-shadow:
+    /* Pink rim light — top edge catches light */
+    0 1px 0 0 rgba(233, 30, 140, 0.95) inset,
+    /* Left face highlight */
+    1px 0 0 0 rgba(255, 255, 255, 0.05) inset,
+    /* Right face shadow */
+    -1px 0 0 0 rgba(0, 0, 0, 0.35) inset,
+    /* Bottom face — key thickness */
+    0 -5px 0 0 rgba(0, 0, 0, 0.55) inset,
+    /* Outer border */
+    0 0 0 1px rgba(233, 30, 140, 0.2),
+    /* Physical drop shadow — key sitting on desk */
+    0 7px 0 0 #080310,
+    0 10px 20px rgba(0, 0, 0, 0.65),
+    /* Ambient pink glow under */
+    0 0 45px rgba(233, 30, 140, 0.08);
+  transition: box-shadow 0.08s ease, transform 0.08s ease, background 0.2s ease;
 }
 
-.btn-launch::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, #e91e8c, #6a0dad);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.skeuo-btn:hover {
+  background: linear-gradient(180deg, #321f3c 0%, #201428 45%, #180f20 100%);
+  box-shadow:
+    0 1px 0 0 rgba(233, 30, 140, 1) inset,
+    1px 0 0 0 rgba(255, 255, 255, 0.07) inset,
+    -1px 0 0 0 rgba(0, 0, 0, 0.35) inset,
+    0 -5px 0 0 rgba(0, 0, 0, 0.55) inset,
+    0 0 0 1px rgba(233, 30, 140, 0.45),
+    0 7px 0 0 #080310,
+    0 12px 28px rgba(0, 0, 0, 0.7),
+    0 0 70px rgba(233, 30, 140, 0.22);
 }
 
-.btn-launch:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 40px var(--accent-glow), 0 0 80px rgba(106, 13, 173, 0.2);
+/* Physical key press — drops 5px to meet its own shadow */
+.skeuo-btn:active {
+  transform: translateY(5px);
+  box-shadow:
+    0 1px 0 0 rgba(233, 30, 140, 0.6) inset,
+    1px 0 0 0 rgba(255, 255, 255, 0.03) inset,
+    -1px 0 0 0 rgba(0, 0, 0, 0.35) inset,
+    0 -2px 0 0 rgba(0, 0, 0, 0.55) inset,
+    0 0 0 1px rgba(233, 30, 140, 0.15),
+    0 2px 0 0 #080310,
+    0 4px 8px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(233, 30, 140, 0.06);
 }
 
-.btn-launch:hover::before {
-  opacity: 1;
+/* Smaller variant for subscribe button */
+.skeuo-btn-sm {
+  padding: 0.8rem 1.6rem;
+  font-size: 0.8rem;
+  border-radius: 8px;
+  box-shadow:
+    0 1px 0 0 rgba(233, 30, 140, 0.95) inset,
+    1px 0 0 0 rgba(255, 255, 255, 0.05) inset,
+    -1px 0 0 0 rgba(0, 0, 0, 0.35) inset,
+    0 -4px 0 0 rgba(0, 0, 0, 0.55) inset,
+    0 0 0 1px rgba(233, 30, 140, 0.2),
+    0 5px 0 0 #080310,
+    0 8px 16px rgba(0, 0, 0, 0.6),
+    0 0 30px rgba(233, 30, 140, 0.08);
 }
 
-.btn-launch span {
-  position: relative;
-  z-index: 1;
+.skeuo-btn-sm:active {
+  transform: translateY(4px);
 }
 
-/* Pulsing ring on launch button */
-@keyframes ring-pulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.6;
-  }
-
-  100% {
-    transform: scale(1.6);
-    opacity: 0;
-  }
+/* ─── How It Works matte card ─── */
+.hiw-card {
+  background: linear-gradient(145deg, #1c1c30 0%, #141428 60%, #0f0f20 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow:
+    0 2px 0 0 rgba(255, 255, 255, 0.04) inset,
+    0 4px 24px rgba(0, 0, 0, 0.5),
+    0 12px 48px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
-.btn-ring {
-  position: absolute;
-  inset: -4px;
-  border: 1px solid var(--accent-pink);
-  animation: ring-pulse 2s ease-out infinite;
-  pointer-events: none;
+.hiw-card:hover {
+  box-shadow:
+    0 2px 0 0 rgba(255, 255, 255, 0.05) inset,
+    0 8px 40px rgba(0, 0, 0, 0.6),
+    0 20px 60px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(233, 30, 140, 0.15),
+    0 0 80px rgba(233, 30, 140, 0.08);
 }
 
-/* Step number large ghost text */
+/* ─── Step ghost number ─── */
 .step-number {
-  font-family: var(--font-syne);
   font-size: clamp(5rem, 10vw, 9rem);
   font-weight: 800;
   color: transparent;
-  -webkit-text-stroke: 1px rgba(233, 30, 140, 0.2);
+  -webkit-text-stroke: 1px rgba(233, 30, 140, 0.14);
   line-height: 1;
   user-select: none;
 }
 
-/* Horizontal rule accent */
 .accent-line {
   width: 40px;
   height: 2px;
@@ -172,7 +224,73 @@ body::before {
   display: block;
 }
 
-/* Section spacing */
-.section-padding {
-  padding: 8rem 0;
+/* ─── Animations ─── */
+@keyframes pulse-dot {
+
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(29, 185, 84, 0.5);
+  }
+
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 0 5px rgba(29, 185, 84, 0);
+  }
+}
+
+@keyframes flow-travel {
+  0% {
+    background-position: 0% 0%;
+  }
+
+  100% {
+    background-position: 0% 100%;
+  }
+}
+
+@keyframes draw-check {
+  from {
+    stroke-dashoffset: 40;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes blink-cursor {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes hash-glow {
+
+  0%,
+  100% {
+    text-shadow: 0 0 8px rgba(233, 30, 140, 0.4);
+  }
+
+  50% {
+    text-shadow: 0 0 20px rgba(233, 30, 140, 0.8);
+  }
+}
+
+@keyframes subtle-float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
 }

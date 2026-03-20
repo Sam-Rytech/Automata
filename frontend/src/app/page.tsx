@@ -6,7 +6,6 @@ import { RevealText, Reveal } from '@/components/ui/reveal'
 import { HowItWorks } from '@/components/sections/how-it-works'
 import { Footer } from '@/components/layout/footer'
 
-// SSR-safe dynamic import for the canvas animation
 const SpiralAnimation = dynamic(
   () => import('@/components/ui/spiral-animation').then(m => ({ default: m.SpiralAnimation })),
   { ssr: false }
@@ -21,6 +20,7 @@ export default function Home() {
           position: 'relative',
           width: '100%',
           height: '100vh',
+          minHeight: '600px',
           overflow: 'hidden',
           background: '#000',
           display: 'flex',
@@ -28,23 +28,23 @@ export default function Home() {
           justifyContent: 'center',
         }}
       >
-        {/* Spiral animation layer */}
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+        {/* Full-bleed spiral — no size constraints */}
+        <div style={{ position: 'absolute', inset: '-10%', zIndex: 0 }}>
           <SpiralAnimation />
         </div>
 
-        {/* Overlay gradient so text is always readable */}
+        {/* Radial vignette so text stays readable */}
         <div
           style={{
             position: 'absolute',
             inset: 0,
             zIndex: 1,
             background:
-              'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(15,15,26,0.1) 0%, rgba(15,15,26,0.6) 100%)',
+              'radial-gradient(ellipse 70% 70% at 50% 50%, rgba(0,0,0,0.15) 0%, rgba(15,15,26,0.55) 65%, rgba(15,15,26,0.85) 100%)',
           }}
         />
 
-        {/* Hero content */}
+        {/* Hero content — centered, stacked */}
         <div
           style={{
             position: 'relative',
@@ -53,68 +53,87 @@ export default function Home() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '2.5rem',
-            padding: '0 2rem',
+            gap: '2rem',
+            padding: '0 1.5rem',
+            width: '100%',
+            maxWidth: '900px',
           }}
         >
-          {/* Eyebrow pill */}
+          {/* Eyebrow */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           >
             <span
               style={{
-                fontSize: '0.72rem',
-                letterSpacing: '0.2em',
+                fontSize: '0.7rem',
+                letterSpacing: '0.22em',
                 textTransform: 'uppercase',
                 color: 'var(--accent-pink)',
-                border: '1px solid rgba(233,30,140,0.35)',
-                padding: '0.35rem 1.1rem',
+                border: '1px solid rgba(233,30,140,0.3)',
+                padding: '0.4rem 1.2rem',
                 borderRadius: '999px',
-                background: 'rgba(233,30,140,0.07)',
+                background: 'rgba(233,30,140,0.06)',
+                whiteSpace: 'nowrap',
               }}
             >
-              Built on Polkadot · XCM v3
+              Built by Velocity Labs
             </span>
           </motion.div>
 
-          {/* Headline */}
+          {/* Headline — two intentional lines, fluid sizing */}
           <h1
             style={{
-              fontSize: 'clamp(3rem, 8vw, 7rem)',
+              fontSize: 'clamp(3.2rem, 9vw, 8rem)',
               fontWeight: 800,
-              lineHeight: 1.0,
+              lineHeight: 0.95,
               letterSpacing: '-0.03em',
               color: '#fff',
-              maxWidth: '900px',
+              width: '100%',
             }}
           >
-            <RevealText text="Cross-Chain Flows." delay={0.4} />
-            <RevealText text="One Click." delay={0.55} />
+            <span style={{ display: 'block', overflow: 'hidden' }}>
+              <RevealText text="Cross-Chain Flows." delay={0.35} />
+            </span>
+            <span style={{ display: 'block', overflow: 'hidden', marginTop: '0.15em' }}>
+              <RevealText text="One Click." delay={0.5} />
+            </span>
           </h1>
 
           {/* Subheadline */}
-          <Reveal delay={0.75}>
+          <Reveal delay={0.7}>
             <p
               style={{
-                color: 'rgba(255,255,255,0.55)',
-                fontSize: 'clamp(1rem, 2vw, 1.2rem)',
+                color: 'rgba(255,255,255,0.45)',
+                fontSize: 'clamp(0.95rem, 1.8vw, 1.15rem)',
                 fontWeight: 400,
-                maxWidth: '500px',
                 lineHeight: 1.7,
+                maxWidth: '420px',
               }}
             >
-              Drag, configure, execute. No XCM knowledge required.
+              Drag, configure, execute.
+              <br />No XCM knowledge required.
             </p>
           </Reveal>
 
-          {/* CTA */}
-          <Reveal delay={0.9}>
+          {/* Skeuomorphic Launch App button */}
+          <Reveal delay={0.88}>
             <Link href="/build" style={{ textDecoration: 'none' }}>
-              <button className="btn-launch" style={{ position: 'relative' }}>
-                <div className="btn-ring" />
+              <button className="skeuo-btn">
                 <span>Launch App</span>
+                <svg
+                  width="16" height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ opacity: 0.7 }}
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
               </button>
             </Link>
           </Reveal>
@@ -124,7 +143,7 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 2, duration: 1 }}
+          transition={{ delay: 2.2, duration: 1 }}
           style={{
             position: 'absolute',
             bottom: '2.5rem',
@@ -137,20 +156,22 @@ export default function Home() {
             gap: '0.5rem',
           }}
         >
-          <span
-            style={{
-              color: 'rgba(255,255,255,0.25)',
-              fontSize: '0.65rem',
-              letterSpacing: '0.2em',
-              textTransform: 'uppercase',
-            }}
-          >
+          <span style={{
+            color: 'rgba(255,255,255,0.2)',
+            fontSize: '0.6rem',
+            letterSpacing: '0.25em',
+            textTransform: 'uppercase',
+          }}>
             Scroll
           </span>
           <motion.div
             animate={{ y: [0, 8, 0] }}
-            transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
-            style={{ width: 1, height: 32, background: 'linear-gradient(to bottom, rgba(233,30,140,0.6), transparent)' }}
+            transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+            style={{
+              width: 1,
+              height: 36,
+              background: 'linear-gradient(to bottom, rgba(233,30,140,0.7), transparent)',
+            }}
           />
         </motion.div>
       </section>
