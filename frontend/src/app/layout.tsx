@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Syne } from 'next/font/google'
 import './globals.css'
-import { Nav } from '@/components/layout/nav'
+import { NavSwitcher } from '@/components/layout/nav-switcher'
 
 const syne = Syne({
   subsets: ['latin'],
@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={syne.variable}>
       <body>
-        <Nav />
+         <NavSwitcher />
         {children}
       </body>
     </html>
