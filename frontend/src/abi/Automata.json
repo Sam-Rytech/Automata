@@ -21,32 +21,6 @@
     "type": "error"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes",
-        "name": "xcmPayload",
-        "type": "bytes"
-      }
-    ],
-    "name": "execute",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "recipeId",
-        "type": "uint256"
-      }
-    ],
-    "name": "executeRecipe",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "ExecutionFailed",
     "type": "error"
@@ -82,13 +56,6 @@
     ],
     "name": "OwnableUnauthorizedAccount",
     "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "pause",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
   },
   {
     "inputs": [],
@@ -171,33 +138,6 @@
     "type": "event"
   },
   {
-    "inputs": [],
-    "name": "renounceOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "newOwner",
-        "type": "address"
-      }
-    ],
-    "name": "transferOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "unpause",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -209,6 +149,45 @@
     ],
     "name": "Unpaused",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "BATCH_PRECOMPILE",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "payload",
+        "type": "bytes"
+      }
+    ],
+    "name": "execute",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "recipeId",
+        "type": "uint256"
+      }
+    ],
+    "name": "executeRecipe",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
   },
   {
     "inputs": [
@@ -244,6 +223,13 @@
   },
   {
     "inputs": [],
+    "name": "pause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "paused",
     "outputs": [
       {
@@ -270,15 +256,29 @@
   },
   {
     "inputs": [],
-    "name": "XCM_PRECOMPILE",
-    "outputs": [
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "newOwner",
         "type": "address"
       }
     ],
-    "stateMutability": "view",
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "unpause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]
