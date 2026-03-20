@@ -1,26 +1,178 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-primary: #0f0f1a;
+  --bg-secondary: #1a1a2e;
+  --bg-card: #16213e;
+  --accent-pink: #e91e8c;
+  --accent-purple: #6a0dad;
+  --accent-glow: rgba(233, 30, 140, 0.25);
+  --text-primary: #ffffff;
+  --text-muted: #888888;
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --font-syne: var(--font-syne-var);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-syne);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Grain overlay for depth */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-pink);
+  border-radius: 2px;
+}
+
+/* Selection */
+::selection {
+  background: rgba(233, 30, 140, 0.3);
+  color: #fff;
+}
+
+/* Nav link hover underline */
+.nav-link {
+  position: relative;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 1px;
+  background: var(--accent-pink);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #fff;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Glow button */
+.btn-launch {
+  position: relative;
+  background: var(--accent-pink);
+  color: #fff;
+  font-family: var(--font-syne);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1.1rem 3rem;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.btn-launch::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #e91e8c, #6a0dad);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-launch:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 40px var(--accent-glow), 0 0 80px rgba(106, 13, 173, 0.2);
+}
+
+.btn-launch:hover::before {
+  opacity: 1;
+}
+
+.btn-launch span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Pulsing ring on launch button */
+@keyframes ring-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.btn-ring {
+  position: absolute;
+  inset: -4px;
+  border: 1px solid var(--accent-pink);
+  animation: ring-pulse 2s ease-out infinite;
+  pointer-events: none;
+}
+
+/* Step number large ghost text */
+.step-number {
+  font-family: var(--font-syne);
+  font-size: clamp(5rem, 10vw, 9rem);
+  font-weight: 800;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(233, 30, 140, 0.2);
+  line-height: 1;
+  user-select: none;
+}
+
+/* Horizontal rule accent */
+.accent-line {
+  width: 40px;
+  height: 2px;
+  background: var(--accent-pink);
+  display: block;
+}
+
+/* Section spacing */
+.section-padding {
+  padding: 8rem 0;
 }
