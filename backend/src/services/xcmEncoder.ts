@@ -55,33 +55,3 @@ export const encodeXcm = async (
   // Convert the SCALE-encoded bytes to a hex string
   return u8aToHex(xcmVersioned.toU8a())
 }
-
-// ==========================================
-// STANDALONE TEST
-// ==========================================
-if (require.main === module) {
-  ;(async () => {
-    try {
-      const api = await getApi()
-
-      const testAction: Action = {
-        type: 'TRANSFER',
-        destinationParaId: 1000,
-        targetContract: '0x0000000000000000000000000000000000000000',
-        callData: '0x12345678', // Dummy encoded call
-        gasLimit: 5000000000n,
-      }
-
-      console.log('⚙️  Encoding test action...')
-      const payload = await encodeXcm([testAction], api)
-
-      console.log('✅ Success! Encoded Payload:')
-      console.log(payload)
-
-      process.exit(0)
-    } catch (error) {
-      console.error('❌ Encoding failed:', error)
-      process.exit(1)
-    }
-  })()
-}
