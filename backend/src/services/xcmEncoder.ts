@@ -1,57 +1,27 @@
-import { ApiPromise } from '@polkadot/api'
-import { u8aToHex } from '@polkadot/util'
+import { ethers } from 'ethers'
 import { Action } from '../types/Action'
-import { getApi } from '../utils/polkadotClient'
 
-/**
- * Encodes an array of Actions into a SCALE-encoded XCM v3 message.
- * @param actions Array of actions configured by the user
- * @param api The active Polkadot API instance
- * @returns A hex string of the encoded XCM bytes
- */
-export const encodeXcm = async (
-  actions: Action[],
-  api: ApiPromise
-): Promise<string> => {
-  const instructions: any[] = []
+// Moonbeam's Native Batch Precompile ABI
+const BATCH_ABI = [
+  'function batchAll(address[] to, uint256[] value, bytes[] callData, uint64[] gasLimit)',
+]
 
-  for (const action of actions) {
-    // We define the fee asset as the native token (parents: 0, interior: 'Here')
-    const feeAsset = {
-      id: { Concrete: { parents: 0, interior: 'Here' } },
-      fun: { Fungible: action.value || 10000000000n }, // Fallback fee amount
-    }
+export const encodeXcm = async (actions: Action[], api: unknown): Promise<string> => {
+  const iface = new ethers.Interface(BATCH_ABI)
 
-    // 1. WithdrawAsset: Pull the fees from the sender's account
-    instructions.push({
-      WithdrawAsset: [feeAsset],
-    })
+  // Map the frontend actions into the arrays the Batch Precompile expects
+  const to = actions.map((a) => a.targetContract)
+  const value = actions.map((a) => a.value || 0n)
+  const callData = actions.map((a) => a.callData)
+  const gasLimit = actions.map((a) => 0n) // 0 means pass all available gas to the sub-call
 
-    // 2. BuyExecution: Buy computation time on the destination chain
-    instructions.push({
-      BuyExecution: {
-        fees: feeAsset,
-        weightLimit: {
-          Limited: { refTime: action.gasLimit, proofSize: 65536n },
-        },
-      },
-    })
+  // Encode the final payload that our Smart Contract will fire
+  const payload = iface.encodeFunctionData('batchAll', [
+    to,
+    value,
+    callData,
+    gasLimit,
+  ])
 
-    // 3. Transact: The actual contract call or system instruction
-    instructions.push({
-      Transact: {
-        originKind: 'SovereignAccount',
-        requireWeightAtMost: { refTime: action.gasLimit, proofSize: 65536n },
-        call: { encoded: action.callData },
-      },
-    })
-  }
-
-  // Wrap the instructions in the XcmVersionedXcm V3 format
-  const xcmVersioned = api.createType('XcmVersionedXcm', {
-    V3: instructions,
-  })
-
-  // Convert the SCALE-encoded bytes to a hex string
-  return u8aToHex(xcmVersioned.toU8a())
+  return payload
 }

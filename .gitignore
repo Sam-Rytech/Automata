@@ -40,3 +40,6 @@ logs/
 # Project specific
 backend/dist/
 shared/dist/
+backend/scripts/test-execute.ts
+backend/scripts/e2e-pipeline.ts
+backend/scripts/full-system-test.ts

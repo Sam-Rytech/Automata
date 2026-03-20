@@ -3,7 +3,7 @@ import { randomBytes } from 'crypto'
 import { encodeXcm } from '../services/xcmEncoder'
 import { simulate } from '../services/simulationService'
 import { getApi } from '../utils/polkadotClient'
-import { ExecuteRequest, ExecuteResponse } from '../types/Action'
+import { ExecuteRequest, ExecuteResponse, Action } from '../types/Action'
 
 export const executeHandler = async (
   req: Request,
@@ -24,9 +24,15 @@ export const executeHandler = async (
       return
     }
 
+    const parsedActions: Action[] = actions.map((action) => ({
+      ...action,
+      gasLimit: BigInt(action.gasLimit),
+      value: action.value ? BigInt(action.value) : undefined,
+    }))
+
     const api = await getApi()
-    const payload = await encodeXcm(actions, api)
-    const simulation = await simulate(actions)
+    const payload = await encodeXcm(parsedActions, api)
+    const simulation = await simulate(parsedActions)
 
     // Generate a random 32-byte flowId
     const flowId = '0x' + randomBytes(32).toString('hex')
@@ -35,7 +41,7 @@ export const executeHandler = async (
       payload,
       flowId,
       estimatedFee: simulation.estimatedFeeUSD,
-      actionCount: actions.length,
+      actionCount: parsedActions.length,
     }
 
     res.json(response)

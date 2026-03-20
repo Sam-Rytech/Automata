@@ -10,14 +10,15 @@ export type Recipe = {
 const recipes: Recipe[] = [
   {
     id: 0,
-    name: 'DOT Transfer',
-    description: 'Instantly transfer DOT to AssetHub via XCM.',
+    name: 'Testnet Transfer',
+    description: 'Actually moves 0.001 DEV to the dead address.',
     actions: [
       {
         type: 'TRANSFER',
-        destinationParaId: 1000, // AssetHub
-        targetContract: '0x0000000000000000000000000000000000000000',
-        callData: '0x1234', // Dummy call data for the hackathon
+        destinationParaId: 2004,
+        targetContract: '0x000000000000000000000000000000000000dEaD', // Test burn address
+        callData: '0x', // Empty call data because we are just sending native tokens
+        value: 1000000000000000n, // 0.001 DEV in Wei
         gasLimit: 5000000000n,
       },
     ],
@@ -29,7 +30,7 @@ const recipes: Recipe[] = [
     actions: [
       {
         type: 'SWAP',
-        destinationParaId: 2004, // Moonbeam
+        destinationParaId: 2004,
         targetContract: '0x0000000000000000000000000000000000000000',
         callData: '0x5678',
         gasLimit: 8000000000n,
