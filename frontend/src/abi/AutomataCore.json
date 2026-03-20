@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "type": "function",
+    "name": "execute",
+    "stateMutability": "payable",
+    "inputs": [{ "name": "xcmPayload", "type": "bytes", "internalType": "bytes" }],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "executeRecipe",
+    "stateMutability": "payable",
+    "inputs": [{ "name": "recipeId", "type": "uint256", "internalType": "uint256" }],
+    "outputs": []
+  },
+  {
+    "type": "event",
+    "name": "FlowExecuted",
+    "inputs": [
+      { "name": "user", "type": "address", "indexed": true },
+      { "name": "flowId", "type": "bytes32", "indexed": true }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "RecipeExecuted",
+    "inputs": [
+      { "name": "recipeId", "type": "uint256", "indexed": true },
+      { "name": "user", "type": "address", "indexed": true }
+    ]
+  }
+]
